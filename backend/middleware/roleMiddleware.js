@@ -1,13 +1,16 @@
 const roleMiddleware = (...allowedRoles) => {
-    return (req, res, next) => {
-        if (!allowedRoles.includes(req.user.role)) {
-            return res.status(403).json({
-                message: "Access denied"
-            });
-        }
+  return (req, res, next) => {
+    console.log("Role from token:", req.user?.role);
+    console.log("Allowed roles:", allowedRoles);
 
-        next();
-    };
+    if (!allowedRoles.includes(req.user?.role)) {
+      return res.status(403).json({
+        message: "Access denied",
+      });
+    }
+
+    next();
+  };
 };
 
 module.exports = roleMiddleware;

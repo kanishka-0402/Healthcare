@@ -33,7 +33,7 @@ const addReport = async (req, res) => {
         });
 
     } catch (error) {
-        console.log("ADD REPORT ERROR:", error);
+        console.log( error);
 
         return res.status(500).json({
             message: "Failed to add report"
@@ -41,4 +41,24 @@ const addReport = async (req, res) => {
     }
 };
 
-module.exports = { addReport };
+const getMyReports = async (req, res) => {
+    try {
+        const patientId = req.user.userId;
+
+        const reports = await Report.find({ patientId });
+
+        return res.status(200).json({
+            message: "Reports fetched successfully",
+            reports
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            message: "Failed to fetch reports"
+        });
+    }
+};
+
+module.exports = {addReport,getMyReports}

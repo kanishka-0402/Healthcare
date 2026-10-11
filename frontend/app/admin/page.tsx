@@ -17,6 +17,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
 
   const fetchUsers = async () => {
     const token = localStorage.getItem("token");
@@ -31,9 +32,7 @@ export default function AdminPage() {
       const response = await fetch(
         "http://localhost:5000/api/auth/admin/users",
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -41,7 +40,6 @@ export default function AdminPage() {
 
       if (!response.ok) {
         setMessage(data.message || "Unable to load users.");
-        setLoading(false);
         return;
       }
 
@@ -64,11 +62,13 @@ export default function AdminPage() {
   ) => {
     e.preventDefault();
     setMessage("");
+    setCreating(true);
 
     const token = localStorage.getItem("token");
 
     if (!token) {
       setMessage("Please log in as admin.");
+      setCreating(false);
       return;
     }
 
@@ -99,130 +99,155 @@ export default function AdminPage() {
       await fetchUsers();
     } catch {
       setMessage("Cannot connect to the backend.");
+    } finally {
+      setCreating(false);
     }
   };
 
   return (
-    <main className="admin-page">
-      <header className="admin-header">
+    <main className="simple-admin">
+      <header className="simple-admin-header">
         <div>
-          <p className="admin-eyebrow">HEALTHCARE MANAGEMENT</p>
           <h1>Admin Dashboard</h1>
-          <p>Manage patient and doctor accounts.</p>
+          <p>Manage patients and doctors.</p>
         </div>
+
         <button
-          className="admin-refresh"
+          type="button"
+          className="simple-button secondary-button"
           onClick={() => {
             setLoading(true);
             fetchUsers();
           }}
+          disabled={loading}
         >
-          Refresh
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </header>
 
-      {message && <p className="admin-message">{message}</p>}
+      {message && <p className="simple-message" role="status">{message}</p>}
 
-      <section className="admin-stats">
-        <div className="admin-stat-card">
-          <span>Total Patients</span>
-          <strong>{patients.length}</strong>
-        </div>
-        <div className="admin-stat-card">
-          <span>Total Doctors</span>
-          <strong>{doctors.length}</strong>
-        </div>
+      <section className="simple-stats">
+        <article className="simple-card">
+          <p>Total Patients</p>
+          <h2>{loading ? "—" : patients.length}</h2>
+        </article>
+
+        <article className="simple-card">
+          <p>Total Doctors</p>
+          <h2>{loading ? "—" : doctors.length}</h2>
+        </article>
       </section>
 
-      <section className="admin-panel">
+      <section className="simple-panel" id="create-doctor">
         <h2>Create Doctor Account</h2>
-        <form className="doctor-form" onSubmit={handleCreateDoctor}>
-          <input
-            type="text"
-            placeholder="Doctor name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <input
-            type="email"
-            placeholder="Doctor email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Temporary password (minimum 8 characters)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={8}
-            required
-          />
-          <button type="submit">Create Doctor</button>
+
+        <form className="simple-form" onSubmit={handleCreateDoctor}>
+          <label>
+            Doctor Name
+            <input
+              type="text"
+              placeholder="Enter full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Email Address
+            <input
+              type="email"
+              placeholder="doctor@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              type="password"
+              placeholder="At least 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
+              required
+            />
+          </label>
+
+          <button
+            type="submit"
+            className="simple-button"
+            disabled={creating}
+          >
+            {creating ? "Creating..." : "Create Doctor"}
+          </button>
         </form>
       </section>
 
-      <section className="admin-panel">
-        <h2>Patients</h2>
-        {loading ? (
-          <p>Loading patients...</p>
-        ) : patients.length === 0 ? (
-          <p>No patients found.</p>
-        ) : (
-          <div className="admin-table-wrapper">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patients.map((patient) => (
-                  <tr key={patient._id}>
-                    <td>{patient.name}</td>
-                    <td>{patient.email}</td>
-                    <td>{patient.role}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <UserTable
+        title="Registered Patients"
+        users={patients}
+        loading={loading}
+        emptyText="No patients found."
+      />
 
-      <section className="admin-panel">
-        <h2>Doctors</h2>
-        {loading ? (
-          <p>Loading doctors...</p>
-        ) : doctors.length === 0 ? (
-          <p>No doctors found.</p>
-        ) : (
-          <div className="admin-table-wrapper">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                </tr>
-              </thead>
-              <tbody>
-                {doctors.map((doctor) => (
-                  <tr key={doctor._id}>
-                    <td>{doctor.name}</td>
-                    <td>{doctor.email}</td>
-                    <td>{doctor.role}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <UserTable
+        title="Registered Doctors"
+        users={doctors}
+        loading={loading}
+        emptyText="No doctors found."
+      />
     </main>
   );
 }
 
+function UserTable({
+  title,
+  users,
+  loading,
+  emptyText,
+}: {
+  title: string;
+  users: User[];
+  loading: boolean;
+  emptyText: string;
+}) {
+  return (
+    <section className="simple-panel">
+      <div className="simple-table-heading">
+        <h2>{title}</h2>
+        <span>{users.length} total</span>
+      </div>
+
+      {loading ? (
+        <p className="simple-empty">Loading accounts...</p>
+      ) : users.length === 0 ? (
+        <p className="simple-empty">{emptyText}</p>
+      ) : (
+        <div className="simple-table-wrapper">
+          <table className="simple-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user._id}>
+                  <td>{user.name}</td>
+                  <td>{user.email}</td>
+                  <td>{user.role}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}

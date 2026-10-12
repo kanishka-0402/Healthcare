@@ -73,6 +73,7 @@ export default function Register() {
         />
 
         <button onClick={handleRegister}>Create Account</button>
+        
 
         {message && <p>{message}</p>}
 
@@ -80,11 +81,7 @@ export default function Register() {
           Already have an account? <a href="/login">Login</a>
         </p>
 
-        <div className="role-options">
-          <p>Choose your login portal</p>
-          <a href="/login?role=patient">Login as Patient</a>
-          <a href="/login?role=doctor">Login as Doctor</a>
-        </div>
+       
       </div>
     </div>
   );

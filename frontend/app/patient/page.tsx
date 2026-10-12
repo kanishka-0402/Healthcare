@@ -2,15 +2,23 @@
 
 import { useState, useEffect } from "react";
 
+type MedicalReport = {
+  _id: string;
+  testName: string;
+  result: string;
+  reportDate?: string;
+};
+
 export default function PatientDashboard() {
-  const [name, setName] = useState<string>("");
-  const [reports, setReports] = useState<any[]>([]);
+  const [name, setName] = useState("");
+  const [reports, setReports] = useState<MedicalReport[]>([]);
   const [year, setYear] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
 
-    const getPatient = async () => {
+    const loadDashboard = async () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
@@ -18,187 +26,213 @@ export default function PatientDashboard() {
         return;
       }
 
-      const response = await fetch(
-        "http://localhost:5000/api/auth/patient",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      try {
+        const [profileResponse, reportsResponse] = await Promise.all([
+          fetch("http://localhost:5000/api/auth/patient", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("http://localhost:5000/api/reports/my-reports", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        const profileData = await profileResponse.json();
+
+        if (
+          !profileResponse.ok ||
+          profileData.user?.role !== "patient"
+        ) {
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+          return;
         }
-      );
 
-      const data = await response.json();
+        setName(profileData.user.name || "Patient");
 
-      if (!response.ok) {
-        window.location.href = "/login";
-        return;
-      }
-
-      setName(data.user.name);
-    };
-
-    const getReports = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) return;
-
-      const response = await fetch(
-        "http://localhost:5000/api/reports/my-reports",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        if (reportsResponse.ok) {
+          const reportsData = await reportsResponse.json();
+          setReports(reportsData.reports || []);
         }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setReports(data.reports);
+      } catch (error) {
+        console.error("Failed to load dashboard:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    getPatient();
-    getReports();
+    loadDashboard();
   }, []);
 
-  return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-8">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-2xl text-white shadow-lg shadow-blue-200">
-              +
-            </div>
+  const handleBookAppointment = () => {
+    window.location.href = "/patient/appointments";
+  };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
+  return (
+    <main className="patient-dashboard">
+      <div className="dashboard-container">
+        <header className="dashboard-header">
+          <div className="dashboard-brand">
+            <div className="brand-symbol">+</div>
             <div>
-              <h1 className="text-xl font-bold text-slate-800">
-                MediCare
-              </h1>
-              <p className="text-sm text-slate-500">
-                Patient Portal
-              </p>
+              <h1>MediCare</h1>
+              <p>Patient Portal</p>
             </div>
           </div>
 
-          <span className="rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
-            ● Active
-          </span>
+          <div className="dashboard-header-actions">
+            <span className="patient-badge">
+              <span className="status-dot" />
+              Patient Account
+            </span>
+
+            <button
+              type="button"
+              className="logout-button"
+              onClick={handleLogout}
+            >
+              <span>↪</span> Logout
+            </button>
+          </div>
         </header>
 
-        <section className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 to-cyan-500 p-7 text-white shadow-xl shadow-blue-100 sm:p-10">
-          <div className="relative z-10">
-            <p className="mb-3 text-sm font-medium text-blue-100">
+        <section className="patient-welcome">
+          <div className="patient-welcome-content">
+            <span className="welcome-label">
               YOUR HEALTH, OUR PRIORITY
-            </p>
+            </span>
 
-            <h2 className="mb-3 text-3xl font-bold sm:text-4xl">
-              Welcome, {name || "Patient"}!
+            <h2>
+              Welcome back,
+              <br />
+              <span>{name || "Patient"}!</span>
             </h2>
 
-            <p className="max-w-xl text-sm leading-6 text-blue-50 sm:text-base">
-              Your personal health space. View your medical reports
-              and keep track of your health information in one place.
+            <p>
+              Your personal health space. Access your medical reports,
+              keep track of your records, and take the next step toward
+              better health.
             </p>
+
+            <button
+              type="button"
+              className="book-appointment-button"
+              onClick={handleBookAppointment}
+            >
+              <span>＋</span> Book an Appointment <span>→</span>
+            </button>
           </div>
 
-          <div className="absolute -right-8 -top-12 h-48 w-48 rounded-full bg-white/10" />
-          <div className="absolute -bottom-20 right-28 h-48 w-48 rounded-full bg-white/10" />
-        </section>
-
-        <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-2xl">
-              📋
+          <div className="welcome-decoration" aria-hidden="true">
+            <div className="welcome-circle">
+              <span>✚</span>
             </div>
-
-            <p className="text-sm font-medium text-slate-500">
-              Total Medical Reports
-            </p>
-
-            <p className="mt-2 text-3xl font-bold text-slate-800">
-              {reports.length}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-2xl">
-              🩺
-            </div>
-
-            <p className="text-sm font-medium text-slate-500">
-              Patient Status
-            </p>
-
-            <p className="mt-2 text-2xl font-bold text-emerald-600">
-              Active
-            </p>
+            <div className="welcome-orbit orbit-one" />
+            <div className="welcome-orbit orbit-two" />
+            <span className="decoration-cross cross-one">✚</span>
+            <span className="decoration-cross cross-two">✦</span>
           </div>
         </section>
 
-        <section>
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <section className="patient-stats">
+          <article className="patient-stat-card">
+            <div className="stat-icon reports-stat-icon">▤</div>
             <div>
-              <h2 className="text-2xl font-bold text-slate-800">
-                My Medical Reports
-              </h2>
+              <p>Total Medical Reports</p>
+              <h3>{loading ? "—" : reports.length}</h3>
+              <span className="stat-caption">
+                Your available medical records
+              </span>
+            </div>
+          </article>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Your available medical test records
-              </p>
+          <article className="patient-stat-card">
+            <div className="stat-icon status-stat-icon">♡</div>
+            <div>
+              <p>Account Status</p>
+              <h3 className="active-status">Active</h3>
+              <span className="stat-caption">
+                Your patient portal is ready
+              </span>
+            </div>
+          </article>
+
+          <article className="patient-stat-card">
+            <div className="stat-icon appointment-stat-icon">＋</div>
+            <div>
+              <p>Need a Consultation?</p>
+              <h3 className="consultation-title">We're here to help</h3>
+              <button
+                type="button"
+                className="small-book-link"
+                onClick={handleBookAppointment}
+              >
+                Find a doctor →
+              </button>
+            </div>
+          </article>
+        </section>
+
+        <section className="patient-reports-section">
+          <div className="reports-heading">
+            <div>
+              <span className="section-eyebrow">YOUR HEALTH RECORDS</span>
+              <h2>My Medical Reports</h2>
+              <p>View your available medical test records in one place.</p>
             </div>
 
-            <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
-              {reports.length} Reports
+            <span className="reports-count">
+              {loading ? "Loading..." : `${reports.length} Reports`}
             </span>
           </div>
 
-          {reports.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
-              <div className="mb-4 text-5xl">📄</div>
-
-              <h3 className="text-lg font-semibold text-slate-800">
-                No Reports Available
-              </h3>
-
-              <p className="mt-2 text-sm text-slate-500">
-                Your medical reports will appear here when available.
+          {loading ? (
+            <div className="empty-reports">
+              <div className="loading-spinner" />
+              <h3>Loading your records...</h3>
+              <p>Please wait while we fetch your medical reports.</p>
+            </div>
+          ) : reports.length === 0 ? (
+            <div className="empty-reports">
+              <div className="empty-reports-icon">▤</div>
+              <h3>No Reports Available Yet</h3>
+              <p>
+                Your medical reports will appear here when they become
+                available.
               </p>
+              <button
+                type="button"
+                className="empty-book-button"
+                onClick={handleBookAppointment}
+              >
+                Book an Appointment →
+              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="reports-grid">
               {reports.map((report) => (
-                <article
-                  key={report._id}
-                  className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-100/60"
-                >
-                  <div className="mb-5 flex items-start justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-2xl">
-                      🧪
-                    </div>
-
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                <article className="medical-report-card" key={report._id}>
+                  <div className="report-card-top">
+                    <div className="report-test-icon">🧪</div>
+                    <span className="report-status">
+                      <span className="status-dot" />
                       Available
                     </span>
                   </div>
 
-                  <h3 className="mb-3 text-xl font-bold text-slate-800">
-                    {report.testName}
-                  </h3>
+                  <h3>{report.testName}</h3>
 
-                  <div className="mb-4 rounded-xl bg-slate-50 p-4">
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Test Result
-                    </p>
-
-                    <p className="break-words text-sm leading-6 text-slate-700">
-                      {report.result}
-                    </p>
+                  <div className="report-result">
+                    <span className="report-result-label">TEST RESULT</span>
+                    <p>{report.result}</p>
                   </div>
 
-                  <div className="flex items-center gap-2 border-t border-slate-100 pt-4 text-sm text-slate-500">
-                    <span>📅</span>
-
+                  <div className="report-date">
+                    <span>▦</span>
                     <span>
                       {report.reportDate
                         ? new Date(report.reportDate).toLocaleDateString(
@@ -218,12 +252,14 @@ export default function PatientDashboard() {
           )}
         </section>
 
-        <footer className="mt-10 border-t border-slate-200 py-6 text-center text-sm text-slate-500">
-          © {year ?? ""} MediCare Patient Portal
-
-          <p className="mt-1">
-            Your health information, all in one place.
+        <footer className="dashboard-footer">
+          <div className="footer-brand">
+            <span>✚</span> MediCare
+          </div>
+          <p>
+            © {year ?? ""} MediCare Patient Portal. Your health matters.
           </p>
+          <span className="footer-security">🔒 Secure Patient Portal</span>
         </footer>
       </div>
     </main>

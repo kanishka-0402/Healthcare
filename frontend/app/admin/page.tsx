@@ -105,143 +105,340 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="simple-admin">
-      <header className="simple-admin-header">
-        <div>
-          <h1>Admin Dashboard</h1>
-          <p>Manage patients and doctors.</p>
-        </div>
+    <main className="admin-modern-page">
+      <div className="admin-modern-container">
+        <header className="admin-modern-header">
+          <div className="admin-modern-heading">
+            <div className="admin-modern-eyebrow">
+              <span className="admin-modern-live-dot" />
+              CAREPOINT ADMINISTRATION
+            </div>
 
-        <button
-          type="button"
-          className="simple-button secondary-button"
-          onClick={() => {
-            setLoading(true);
-            fetchUsers();
-          }}
-          disabled={loading}
-        >
-          {loading ? "Loading..." : "Refresh"}
-        </button>
-      </header>
+            <h1>Admin Dashboard</h1>
 
-      {message && <p className="simple-message" role="status">{message}</p>}
-
-      <section className="simple-stats">
-        <article className="simple-card">
-          <p>Total Patients</p>
-          <h2>{loading ? "—" : patients.length}</h2>
-        </article>
-
-        <article className="simple-card">
-          <p>Total Doctors</p>
-          <h2>{loading ? "—" : doctors.length}</h2>
-        </article>
-      </section>
-
-      <section className="simple-panel" id="create-doctor">
-        <h2>Create Doctor Account</h2>
-
-        <form className="simple-form" onSubmit={handleCreateDoctor}>
-          <label>
-            Doctor Name
-            <input
-              type="text"
-              placeholder="Enter full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </label>
-
-          <label>
-            Email Address
-            <input
-              type="email"
-              placeholder="doctor@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </label>
-
-          <label>
-            Password
-            <input
-              type="password"
-              placeholder="At least 8 characters"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              minLength={8}
-              required
-            />
-          </label>
+            <p>
+              Manage your healthcare network, monitor accounts and
+              onboard medical professionals.
+            </p>
+          </div>
 
           <button
-            type="submit"
-            className="simple-button"
-            disabled={creating}
+            type="button"
+            className="admin-modern-refresh"
+            onClick={() => {
+              setLoading(true);
+              fetchUsers();
+            }}
+            disabled={loading}
           >
-            {creating ? "Creating..." : "Create Doctor"}
+            <span className="admin-modern-refresh-icon">↻</span>
+            {loading ? "Loading..." : "Refresh Data"}
           </button>
-        </form>
-      </section>
+        </header>
 
-      <UserTable
-        title="Registered Patients"
-        users={patients}
-        loading={loading}
-        emptyText="No patients found."
-      />
+        <section className="admin-modern-welcome">
+          <div className="admin-modern-welcome-content">
+            <span className="admin-modern-welcome-label">
+              ADMIN WORKSPACE
+            </span>
 
-      <UserTable
-        title="Registered Doctors"
-        users={doctors}
-        loading={loading}
-        emptyText="No doctors found."
-      />
+            <h2>Everything under control.</h2>
+
+            <p>
+              Keep track of registered patients and doctors from one
+              central workspace.
+            </p>
+
+            <a href="#admin-create-doctor">
+              + Create Doctor Account
+            </a>
+          </div>
+
+          <div className="admin-modern-welcome-art" aria-hidden="true">
+            <div className="admin-modern-art-ring">
+              <span>✚</span>
+            </div>
+            <div className="admin-modern-art-dot admin-modern-art-dot-one" />
+            <div className="admin-modern-art-dot admin-modern-art-dot-two" />
+          </div>
+        </section>
+
+        {message && (
+          <div
+            role="status"
+            aria-live="polite"
+            className={`admin-modern-message ${
+              message.toLowerCase().includes("success")
+                ? "admin-modern-message-success"
+                : "admin-modern-message-error"
+            }`}
+          >
+            <span aria-hidden="true">
+              {message.toLowerCase().includes("success") ? "✓" : "ⓘ"}
+            </span>
+            {message}
+          </div>
+        )}
+
+        <section className="admin-modern-stats">
+          <article className="admin-modern-stat-card">
+            <div className="admin-modern-stat-top">
+              <div className="admin-modern-stat-icon admin-modern-patient-icon">
+                ♙
+              </div>
+              <span className="admin-modern-stat-tag">PATIENTS</span>
+            </div>
+
+            <p>Total Patients</p>
+
+            <div className="admin-modern-stat-bottom">
+              <h2>{loading ? "—" : patients.length}</h2>
+              <span className="admin-modern-stat-description">
+                Registered accounts
+              </span>
+            </div>
+          </article>
+
+          <article className="admin-modern-stat-card">
+            <div className="admin-modern-stat-top">
+              <div className="admin-modern-stat-icon admin-modern-doctor-icon">
+                ✚
+              </div>
+              <span className="admin-modern-stat-tag">MEDICAL TEAM</span>
+            </div>
+
+            <p>Total Doctors</p>
+
+            <div className="admin-modern-stat-bottom">
+              <h2>{loading ? "—" : doctors.length}</h2>
+              <span className="admin-modern-stat-description">
+                Medical professionals
+              </span>
+            </div>
+          </article>
+
+          <article className="admin-modern-stat-card admin-modern-stat-highlight">
+            <div className="admin-modern-stat-top">
+              <div className="admin-modern-stat-icon admin-modern-network-icon">
+                ◈
+              </div>
+              <span className="admin-modern-stat-tag">NETWORK</span>
+            </div>
+
+            <p>Total Accounts</p>
+
+            <div className="admin-modern-stat-bottom">
+              <h2>
+                {loading ? "—" : patients.length + doctors.length}
+              </h2>
+              <span className="admin-modern-stat-description">
+                Patients and doctors
+              </span>
+            </div>
+          </article>
+        </section>
+
+        <section
+          className="admin-modern-panel admin-modern-create-panel"
+          id="admin-create-doctor"
+        >
+          <div className="admin-modern-panel-heading">
+            <div className="admin-modern-panel-title">
+              <div className="admin-modern-panel-icon">✚</div>
+              <div>
+                <h2>Create Doctor Account</h2>
+                <p>
+                  Add a medical professional to your healthcare network.
+                </p>
+              </div>
+            </div>
+
+            <span className="admin-modern-secure-badge">
+              <span>✓</span> Secure
+            </span>
+          </div>
+
+          <form
+            className="admin-modern-form"
+            onSubmit={handleCreateDoctor}
+          >
+            <div className="admin-modern-form-grid">
+              <label className="admin-modern-field">
+                <span>Doctor Name <b>*</b></span>
+                <input
+                  type="text"
+                  placeholder="Enter full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </label>
+
+              <label className="admin-modern-field">
+                <span>Email Address <b>*</b></span>
+                <input
+                  type="email"
+                  placeholder="doctor@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </label>
+
+              <label className="admin-modern-field admin-modern-password-field">
+                <span>Password <b>*</b></span>
+                <input
+                  type="password"
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={8}
+                  required
+                />
+                <small>Use a strong password for the new account.</small>
+              </label>
+            </div>
+
+            <div className="admin-modern-form-footer">
+              <p>
+                <span>🔒</span> Account information is transmitted securely.
+              </p>
+
+              <button type="submit" disabled={creating}>
+                {creating ? "Creating Account..." : "Create Doctor"}
+                {!creating && <span aria-hidden="true">→</span>}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <UserTable
+          title="Registered Patients"
+          subtitle="View all patient accounts registered on CarePoint."
+          users={patients}
+          loading={loading}
+          emptyText="No patients have registered yet."
+          icon="♙"
+          type="patients"
+        />
+
+        <UserTable
+          title="Registered Doctors"
+          subtitle="Manage visibility of the current medical team."
+          users={doctors}
+          loading={loading}
+          emptyText="No doctor accounts found."
+          icon="✚"
+          type="doctors"
+        />
+
+        <footer className="admin-modern-footer">
+          <span>✚</span>
+          CarePoint Healthcare Administration
+        </footer>
+      </div>
     </main>
   );
 }
 
 function UserTable({
   title,
+  subtitle,
   users,
   loading,
   emptyText,
+  icon,
+  type,
 }: {
   title: string;
+  subtitle: string;
   users: User[];
   loading: boolean;
   emptyText: string;
+  icon: string;
+  type: "patients" | "doctors";
 }) {
   return (
-    <section className="simple-panel">
-      <div className="simple-table-heading">
-        <h2>{title}</h2>
-        <span>{users.length} total</span>
+    <section className="admin-modern-panel admin-modern-table-panel">
+      <div className="admin-modern-panel-heading">
+        <div className="admin-modern-panel-title">
+          <div
+            className={`admin-modern-panel-icon ${
+              type === "patients"
+                ? "admin-modern-patient-panel-icon"
+                : "admin-modern-doctor-panel-icon"
+            }`}
+          >
+            {icon}
+          </div>
+
+          <div>
+            <h2>{title}</h2>
+            <p>{subtitle}</p>
+          </div>
+        </div>
+
+        <span className="admin-modern-count-badge">
+          {users.length} total
+        </span>
       </div>
 
       {loading ? (
-        <p className="simple-empty">Loading accounts...</p>
+        <div className="admin-modern-empty">
+          <span className="admin-modern-loading-icon">↻</span>
+          <p>Loading accounts...</p>
+        </div>
       ) : users.length === 0 ? (
-        <p className="simple-empty">{emptyText}</p>
+        <div className="admin-modern-empty">
+          <span className="admin-modern-empty-icon">{icon}</span>
+          <h3>No accounts yet</h3>
+          <p>{emptyText}</p>
+        </div>
       ) : (
-        <div className="simple-table-wrapper">
-          <table className="simple-table">
+        <div className="admin-modern-table-wrapper">
+          <table className="admin-modern-table">
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Email</th>
+                <th>Email Address</th>
                 <th>Role</th>
               </tr>
             </thead>
+
             <tbody>
               {users.map((user) => (
                 <tr key={user._id}>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>{user.role}</td>
+                  <td>
+                    <div className="admin-modern-user-cell">
+                      <div
+                        className={`admin-modern-user-avatar ${
+                          type === "patients"
+                            ? "admin-modern-user-avatar-patient"
+                            : "admin-modern-user-avatar-doctor"
+                        }`}
+                      >
+                        {user.name?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                      <span>{user.name}</span>
+                    </div>
+                  </td>
+
+                  <td className="admin-modern-email-cell">
+                    {user.email}
+                  </td>
+
+                  <td>
+                    <span
+                      className={`admin-modern-role ${
+                        type === "patients"
+                          ? "admin-modern-role-patient"
+                          : "admin-modern-role-doctor"
+                      }`}
+                    >
+                      <span />
+                      {user.role}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>

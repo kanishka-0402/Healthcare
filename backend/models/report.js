@@ -1,23 +1,39 @@
-
 const mongoose = require("mongoose");
 
-const reportSchema = new mongoose.Schema({
+const reportSchema = new mongoose.Schema(
+  {
     patientId: {
-        type: String,
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
+
+    doctorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     testName: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
+      trim: true,
     },
+
     result: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
+      trim: true,
     },
+
     reportDate: {
-        type: String,
-        required: true
-    }
-});
+      type: Date,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 module.exports = mongoose.model("Report", reportSchema);

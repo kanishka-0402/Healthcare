@@ -1,6 +1,12 @@
 
 const express = require("express");
-const { addReport, getMyReports } = require("../controllers/reportController");
+
+const {
+  addReport,
+  getMyReports,
+  getDoctorReports,
+} = require("../controllers/reportController");
+
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
 
@@ -15,6 +21,15 @@ router.post(
   addReport
 );
 
+
+router.get(
+  "/",
+  authMiddleware,
+  roleMiddleware("doctor"),
+  getDoctorReports
+);
+
+
 router.get(
   "/my-reports",
   authMiddleware,
@@ -23,3 +38,4 @@ router.get(
 );
 
 module.exports = router;
+

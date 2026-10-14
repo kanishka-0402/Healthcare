@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 type UserRole = "patient" | "doctor" | "admin";
 
@@ -10,6 +12,7 @@ export default function Login() {
   const [role, setRole] = useState<UserRole>("patient");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async (): Promise<void> => {
     if (!email || !password) {
@@ -59,15 +62,15 @@ export default function Login() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", actualRole);
 
-      if (actualRole === "patient") {
-        window.location.href = "/patient";
-      } else if (actualRole === "doctor") {
-        window.location.href = "/doctor";
-      } else if (actualRole === "admin") {
-        window.location.href = "/admin";
-      } else {
-        setMessage("Invalid user role.");
-      }
+     if (actualRole === "patient") {
+  router.push("/patient");
+} else if (actualRole === "doctor") {
+  router.push("/doctor");
+} else if (actualRole === "admin") {
+  router.push("/admin");
+} else {
+  setMessage("Invalid user role.");
+}
     } catch {
       setMessage("Cannot connect to the backend.");
     } finally {
@@ -168,7 +171,7 @@ export default function Login() {
             {message && <p role="status">{message}</p>}
 
             <p className="register-text">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <a href="/register">Create an account</a>
             </p>
           </div>

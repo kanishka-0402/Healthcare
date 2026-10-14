@@ -1,4 +1,3 @@
-const Appointment = require("../models/appointment")
 const Report = require("../models/report");
 const User = require("../models/User");
 
@@ -41,7 +40,7 @@ const addReport = async (req, res) => {
   }
 };
 
-// Patient: Get their own medical reports
+
 const getMyReports = async (req, res) => {
   try {
     const reports = await Report.find({
@@ -61,7 +60,6 @@ const getMyReports = async (req, res) => {
   }
 };
 
-// Doctor: Get reports they have added
 const getDoctorReports = async (req, res) => {
   try {
     const reports = await Report.find({

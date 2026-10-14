@@ -12,21 +12,21 @@ export default function AppointmentsPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [doctor, setDoctor] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
-  const [today, setToday] = useState("");
+ const [today] = useState(() => {
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+  const day = String(currentDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+});
   const [timeSlot, setTimeSlot] = useState("");
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
   const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [booking, setBooking] = useState(false);
 
-  useEffect(() => {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-    const day = String(currentDate.getDate()).padStart(2, "0");
-
-    setToday(`${year}-${month}-${day}`);
-  }, []);
+ 
 
   useEffect(() => {
     let cancelled = false;

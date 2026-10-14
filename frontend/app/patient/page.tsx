@@ -1,7 +1,7 @@
 "use client";
-
 import { useState, useEffect } from "react";
-
+import { useRouter } from "next/navigation";
+import Chatbot from "../../component/chatbox/Chatbot";
 type MedicalReport = {
   _id: string;
   testName: string;
@@ -12,17 +12,16 @@ type MedicalReport = {
 export default function PatientDashboard() {
   const [name, setName] = useState("");
   const [reports, setReports] = useState<MedicalReport[]>([]);
-  const [year, setYear] = useState<number | null>(null);
+  const [year] = useState(() => new Date().getFullYear());
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    setYear(new Date().getFullYear());
-
     const loadDashboard = async () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        window.location.href = "/login";
+        router.push("/login");
         return;
       }
 
@@ -43,7 +42,7 @@ export default function PatientDashboard() {
           profileData.user?.role !== "patient"
         ) {
           localStorage.removeItem("token");
-          window.location.href = "/login";
+          router.push("/login");
           return;
         }
 
@@ -61,15 +60,15 @@ export default function PatientDashboard() {
     };
 
     loadDashboard();
-  }, []);
+  }, [router]);
 
   const handleBookAppointment = () => {
-    window.location.href = "/patient/appointments";
+    router.push("/patient/appointments");
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    router.push("/login");
   };
 
   return (
@@ -165,7 +164,7 @@ export default function PatientDashboard() {
             <div className="stat-icon appointment-stat-icon">＋</div>
             <div>
               <p>Need a Consultation?</p>
-              <h3 className="consultation-title">We're here to help</h3>
+              <h3 className="consultation-title">We&apos;re here to help</h3>
               <button
                 type="button"
                 className="small-book-link"
@@ -260,8 +259,10 @@ export default function PatientDashboard() {
             © {year ?? ""} MediCare Patient Portal. Your health matters.
           </p>
           <span className="footer-security">🔒 Secure Patient Portal</span>
+         
         </footer>
       </div>
+       <Chatbot />
     </main>
   );
 }

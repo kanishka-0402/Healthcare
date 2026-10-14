@@ -1,6 +1,6 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import Chatbot from "@/component/chatbox/Chatbot";
+import { useCallback, useEffect, useState } from "react";
 
 type User = {
   _id: string;
@@ -8,10 +8,20 @@ type User = {
   email: string;
   role: string;
 };
+type Appointment = {
+  _id: string;
+  patient: User | null;
+  doctor: User | null;
+  appointmentDate: string;
+  timeSlot: string;
+  reason: string;
+  status: "pending" | "confirmed" | "cancelled" | "completed";
+};
 
 export default function AdminPage() {
   const [patients, setPatients] = useState<User[]>([]);
   const [doctors, setDoctors] = useState<User[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +29,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -45,17 +55,38 @@ export default function AdminPage() {
 
       setPatients(data.patients || []);
       setDoctors(data.doctors || []);
+      const appointmentResponse = await fetch(
+  "http://localhost:5000/api/appointments/admin/all",
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+const appointmentData = await appointmentResponse.json();
+
+if (!appointmentResponse.ok) {
+  setMessage(appointmentData.message || "Unable to load appointments.");
+  return;
+}
+
+setAppointments(appointmentData.appointments || []);
       setMessage("");
     } catch {
       setMessage("Cannot connect to the backend.");
     } finally {
       setLoading(false);
     }
-  };
+    }, []);
 
   useEffect(() => {
+  const timer = setTimeout(() => {
     fetchUsers();
-  }, []);
+  }, 0);
+
+  return () => clearTimeout(timer);
+}, [fetchUsers]);
 
   const handleCreateDoctor = async (
     e: React.FormEvent<HTMLFormElement>
@@ -236,6 +267,23 @@ export default function AdminPage() {
               </span>
             </div>
           </article>
+          <article className="admin-modern-stat-card">
+  <div className="admin-modern-stat-top">
+    <div className="admin-modern-stat-icon admin-modern-network-icon">
+      ▣
+    </div>
+    <span className="admin-modern-stat-tag">APPOINTMENTS</span>
+  </div>
+
+  <p>Total Appointments</p>
+
+  <div className="admin-modern-stat-bottom">
+    <h2>{loading ? "—" : appointments.length}</h2>
+    <span className="admin-modern-stat-description">
+      All booked appointments
+    </span>
+  </div>
+</article>
         </section>
 
         <section
@@ -331,11 +379,69 @@ export default function AdminPage() {
           icon="✚"
           type="doctors"
         />
+       
+<section className="admin-modern-panel admin-modern-table-panel">
+  <div className="admin-modern-panel-heading">
+    <div className="admin-modern-panel-title">
+      <div className="admin-modern-panel-icon">▣</div>
+      <div>
+        <h2>All Appointments</h2>
+        <p>View appointments booked by patients with their assigned doctors.</p>
+      </div>
+    </div>
+
+    <span className="admin-modern-count-badge">
+      {appointments.length} total
+    </span>
+  </div>
+
+  {loading ? (
+    <div className="admin-modern-empty">
+      <p>Loading appointments...</p>
+    </div>
+  ) : appointments.length === 0 ? (
+    <div className="admin-modern-empty">
+      <h3>No appointments yet</h3>
+      <p>Booked appointments will appear here.</p>
+    </div>
+  ) : (
+    <div className="admin-modern-table-wrapper">
+      <table className="admin-modern-table">
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Doctor</th>
+            <th>Date</th>
+            <th>Time Slot</th>
+            <th>Reason</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {appointments.map((appointment) => (
+            <tr key={appointment._id}>
+              <td>{appointment.patient?.name || "N/A"}</td>
+              <td>{appointment.doctor?.name || "N/A"}</td>
+              <td>
+                {new Date(appointment.appointmentDate).toLocaleDateString("en-IN")}
+              </td>
+              <td>{appointment.timeSlot}</td>
+              <td>{appointment.reason || "Not specified"}</td>
+              <td>{appointment.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</section>
+
 
         <footer className="admin-modern-footer">
           <span>✚</span>
           CarePoint Healthcare Administration
         </footer>
+                <Chatbot />
       </div>
     </main>
   );

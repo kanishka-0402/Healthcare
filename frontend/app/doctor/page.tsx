@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Chatbot from "../../component/chatbox/Chatbot";
 
 type MenuItem =
   | "Overview"
@@ -78,9 +79,11 @@ export default function DoctorPage() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      setAppointmentsError("Please log in first.");
-      return;
-    }
+  queueMicrotask(() => {
+    setAppointmentsError("Please log in first.");
+  });
+  return;
+}
 
     let cancelled = false;
 
@@ -138,9 +141,11 @@ export default function DoctorPage() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      setProfileError("Please log in first.");
-      return;
-    }
+  queueMicrotask(() => {
+    setProfileError("Please log in first.");
+  });
+  return;
+}
 
     let cancelled = false;
 
@@ -191,17 +196,18 @@ export default function DoctorPage() {
     };
   }, [activeMenu]);
 
-  // Fetch reports.
-  // This uses GET /api/reports, which must exist in the backend.
+  
   useEffect(() => {
     if (activeMenu !== "My Reports") return;
 
     const token = localStorage.getItem("token");
 
-    if (!token) {
-      setReportsError("Please log in first.");
-      return;
-    }
+   if (!token) {
+  queueMicrotask(() => {
+    setReportsError("Please log in first.");
+  });
+  return;
+}
 
     let cancelled = false;
 
@@ -489,7 +495,7 @@ export default function DoctorPage() {
                   <span className="action-icon purple">✚</span>
                   <span>
                     <strong>Add Medical Report</strong>
-                    <small>Save a patient's medical report</small>
+                    <small>Save a patient&apos;s medical report</small>
                   </span>
                   <span className="action-arrow">→</span>
                 </button>
@@ -658,7 +664,7 @@ export default function DoctorPage() {
                 <div>
                   <h2>Add Medical Report</h2>
                   <p>
-                    Enter the patient's medical report details below.
+                    Enter the patient&apos;s medical report details below.
                   </p>
                 </div>
                 <div className="report-heading-icon">✚</div>
@@ -863,6 +869,7 @@ export default function DoctorPage() {
           </div>
         )}
       </section>
+      <Chatbot />
     </main>
   );
 }

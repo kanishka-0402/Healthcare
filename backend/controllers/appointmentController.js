@@ -1,7 +1,7 @@
 const Appointment = require("../models/appointment");
 const User = require("../models/User");
 
-// Book an appointment (Patient)
+
 const bookAppointment = async (req, res) => {
   try {
     if (req.user.role !== "patient") {
@@ -78,7 +78,6 @@ const bookAppointment = async (req, res) => {
   }
 };
 
-// Get appointments for the logged-in patient
 const getMyAppointments = async (req, res) => {
   try {
     if (req.user.role !== "patient") {
@@ -144,10 +143,27 @@ const getDoctors = async (req, res) => {
     });
   }
 };
+const getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find()
+      .populate("patient", "name email")
+      .populate("doctor", "name email")
+      .sort({ appointmentDate: 1 });
+
+    return res.status(200).json({ appointments });
+  } catch (error) {
+    console.error("Get all appointments error:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch all appointments",
+    });
+  }
+};
 
 module.exports = {
   bookAppointment,
   getMyAppointments,
   getDoctorAppointments,
   getDoctors,
+  getAllAppointments
 };
